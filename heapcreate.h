@@ -9,4 +9,13 @@ This file is part of the library itself.
 #ifndef HEAPCREATE_H
 #define HEAPCREATE_H
 
+typedef struct {
+	void* lowEnd;
+	void* highEnd;
+} MemoryBorders;
+
+MemoryBorders cleanUpMEM2();
+void* createExpHeap(MemoryBorders borders);
+void* cleanUpMEM2AndCreateExpHeap();
+
 #endif //HEAPCREATE_H
