@@ -15,7 +15,10 @@ typedef struct {
 } MemoryBorders;
 
 MemoryBorders cleanUpMEM2();
-void* createExpHeap(MemoryBorders borders);
 void* cleanUpMEM2AndCreateExpHeap();
 
+MemoryBorders cleanUpBucket();
+void* cleanUpBucketAndCreateExpHeap();
+
+void* createExpHeap(MemoryBorders borders);
 #endif //HEAPCREATE_H

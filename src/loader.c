@@ -32,13 +32,11 @@ void demoMain() {
 	
 	//createExpHeap is a convenience function. It's probably faster just to create the heap yourself.
 	void* largeHeap = createExpHeap(borders);
-	
 	/* Alternativley to the above, you can just do something like
 	
 	void* largeHeap = cleanUpMEM2AndCreateExpHeap(); //Convenience function
 	
 	Which is a lot neater. */
-	
 	unsigned int (*MEMGetTotalFreeSizeForExpHeap)(void* heap);
 	OSDynLoad_FindExport(coreinit_handle, 0, "MEMGetTotalFreeSizeForExpHeap", &MEMGetTotalFreeSizeForExpHeap);
 	
@@ -47,7 +45,19 @@ void demoMain() {
 	__os_snprintf(print, 255, "OK: Created a %.2fMB (0x%X) heap at 0x%X", ((float)heapSize)/1024/1024, heapSize, largeHeap);
 	printstr(4, print);
 	
-	printstr(5, "All OK! Press A to quit.");
+	printstr(6, "INFO: Cleaning up bucket heaps...");
+	
+	/*
+		I'm being lazy this time around, but you can do something like the above with cleanUpBucket() if you want.
+	*/
+	void* bucketHeap = cleanUpBucketAndCreateExpHeap();
+	
+	unsigned int bucketHeapSize = MEMGetTotalFreeSizeForExpHeap(bucketHeap);
+	
+	__os_snprintf(print, 255, "OK: Created a %.2fMB (0x%X) heap at 0x%X", ((float)bucketHeapSize)/1024/1024, bucketHeapSize, bucketHeap);
+	printstr(7, print);
+	
+	printstr(9, "All OK! Press A to quit.");
 	waitUntilVPAD();
 }
 

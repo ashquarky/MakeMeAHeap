@@ -14,6 +14,8 @@ This file is part of the library itself.
 //Memory section to search in. Appears safe on 5.5.
 #define MEMORY_SAFE_LOWEND 0x10000000
 #define MEMORY_SAFE_HIGHEND 0x20000000
+#define BUCKET_LOWEND 0xE0000000
+#define BUCKET_HIGHEND 0xE4000000
 
 #define EXP_HEAP_HEADER 0x45585048
 #define FRM_HEAP_HEADER 0x46524D48
@@ -86,5 +88,42 @@ void* createExpHeap(MemoryBorders borders) {
 void* cleanUpMEM2AndCreateExpHeap() {
 	MemoryBorders borders;
 	borders = cleanUpMEM2();
+	return createExpHeap(borders);
+}
+
+/*
+	Same as cleanUpMEM2 except this time we search bucket memory.
+*/
+MemoryBorders cleanUpBucket() {
+	unsigned int coreinit_handle;
+	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle);
+	void (*MEMDestroyExpHeap)(void* heap);
+	void (*MEMDestroyFrmHeap)(void* heap);
+	OSDynLoad_FindExport(coreinit_handle, 0, "MEMDestroyFrmHeap", &MEMDestroyFrmHeap);
+	OSDynLoad_FindExport(coreinit_handle, 0, "MEMDestroyExpHeap", &MEMDestroyExpHeap);
+	
+	register void* search;
+	for (search = (void*)BUCKET_LOWEND; search < (void*)BUCKET_HIGHEND; search += 4) {
+		if (*(unsigned int*)search == 0x45585048) {
+			MEMDestroyExpHeap(search);
+		} 
+	}
+	for (search = (void*)BUCKET_LOWEND; search < (void*)BUCKET_HIGHEND; search += 4) {
+		if (*(unsigned int*)search == 0x46524D48) {
+			MEMDestroyFrmHeap(search);
+		}
+	}
+	
+	//Bucket memory seems very safe so there's not much to worry about here
+	MemoryBorders borders;
+	borders.lowEnd = (void*)BUCKET_LOWEND;
+	borders.highEnd = (void*)BUCKET_HIGHEND;
+	
+	return borders;
+}
+
+void* cleanUpBucketAndCreateExpHeap() {
+	MemoryBorders borders;
+	borders = cleanUpBucket();
 	return createExpHeap(borders);
 }
